@@ -24,6 +24,45 @@ def parse_timestamp(ts):
     except (ValueError, AttributeError) as e:
         print(f"Timestamp invalide '{ts}': {e}")
         return None
+    
+def calculate_iqr(data):
+   
+    iqrs=[]
+    LIMITS = {
+        "pm02_corrected": 75,      # PM2.5
+        "pm10_corrected": 150,     # PM10
+        "no2": 200,
+        "so2": 50,
+        "rco2_corrected": 10000,
+        "o3": 100
+    }
+    
+    for key,value in data.items():
+       if value is None:
+           value = 0
+       print(f"Calcul de l'IQR pour {key} avec valeur {value} et limite {LIMITS[key]}")
+       iqr=(value *100)/LIMITS[key]
+       iqrs.append(iqr)
+    return max(iqrs)
+
+def categorie_iqa(iqa):
+
+    if iqa <= 50:
+        return "Bonne"
+
+    elif iqa <= 100:
+        return "Modérée"
+
+    elif iqa <= 150:
+        return "Mauvaise pour les personnes sensibles"
+
+    elif iqa <= 200:
+        return "Mauvaise"
+
+    elif iqa <= 300:
+        return "Très mauvaise"
+
+    return "Dangereuse"
 
 
 def safe_deserialize(x):
@@ -69,9 +108,9 @@ sql = """
     INSERT INTO air_quality_data(
         location_id, location_name, latitude, longitude, timestamp,
         pm25, pm10, temperature, humidity, co2, tvoc,
-        co, no, no2, so2, o3, nh3,vitesse_vent,direction_vent
+        co, no, no2, so2, o3, nh3,vitesse_vent,direction_vent,iqr,categorie_iqa
     )
-    VALUES (%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,%s,%s)
+    VALUES (%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
 """
 
 
@@ -127,6 +166,20 @@ try:
             if station.get("rco2_corrected") is None:
                 station["rco2_corrected"] = components.get("co2")
                 
+                
+            pollutions = {
+                "pm02_corrected":station.get("pm02_corrected"),      # PM2.5
+                "pm10_corrected": station.get("pm10_corrected"),     # PM10
+                "no2": components.get("no2"),
+                "so2": components.get("so2"),
+                "rco2_corrected": station.get("rco2_corrected"),
+                "o3": components.get("o3")
+            }
+                
+            iqr = calculate_iqr(pollutions)
+            
+            print(f"IQR calculé pour {station.get('locationName')}: {iqr}")
+                
             values = (
                 station.get("locationId"),
                 station.get("locationName"),
@@ -146,7 +199,9 @@ try:
                 components.get("o3"),
                 components.get("nh3"),
                 wind["speed"],
-                wind["deg"]
+                wind["deg"],
+                iqr,
+                categorie_iqa(iqr)
             )
 
             cursor.execute(sql, values)

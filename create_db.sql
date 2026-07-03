@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS air_quality_data (
     so2             FLOAT,
     o3              FLOAT,
     nh3             FLOAT,
+    iqr             FLOAT,
+    categorie_iqa   VARCHAR(50),
 
     -- Métadonnées
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
