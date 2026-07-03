@@ -1,13 +1,20 @@
 import json
 import time
+from dotenv import load_dotenv
 import requests
 from kafka import KafkaProducer
 import os
 
 
+load_dotenv()
 
+if os.getenv("KEY_AIGRADIENT") is None:
+    raise ValueError("La variable KEY_AIGRADIENT n'est pas définie dans le fichier .env")
 
 KEY_AIGRADIENT = os.getenv("KEY_AIGRADIENT")
+if KEY_AIGRADIENT is None:
+    raise ValueError("La variable KEY_AIGRADIENT n'est pas définie dans le fichier .env")
+
 API_URL = f"https://api.airgradient.com/public/api/v1/locations/measures/current?token={KEY_AIGRADIENT}"
 
 

@@ -1,12 +1,16 @@
 import json
+from dotenv import load_dotenv
 import os
 import requests
 import mysql.connector
 from datetime import datetime
 from kafka import KafkaConsumer
 
-API_KEY = os.getenv("API_KEY")
+load_dotenv()
 
+API_KEY = os.getenv("API_KEY")
+if API_KEY is None:
+    raise ValueError("La variable API_KEY n'est pas définie dans le fichier .env")
 
 def parse_timestamp(ts):
     """Convertit un timestamp ISO 8601 ('...Z') en format compatible MySQL DATETIME.
