@@ -9,8 +9,7 @@ data = pd.read_csv("air_quality.csv")
 print(data.head())
 x = data[["latitude", "longitude"]]
 y = data[['iqr','pm25','pm10','co2','no2','so2','o3']]
-#y = y['categorie_iqa'].map({'Bonne':0,'moderée':1,'Mauvaise':2,'Très mauvaise':3,'Extrêmement mauvaise':4})
-#imputation des valeurs manquantes pour les colonnes "pm02_corrected", "pm10_corrected", "atmp_corrected", "rhum_corrected" et "rco2_corrected"
+
 x = x.fillna(x.mean())
 y = y.fillna(y.mean())
 
