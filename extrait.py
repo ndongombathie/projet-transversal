@@ -15,12 +15,18 @@ engine = create_engine(
 )
 
 
+#recuperer les données donc la colonne updated_at a changé depuis la dernière 5 minutes exécution du script 
+import datetime
+last_run = datetime.datetime.now() - datetime.timedelta(minutes=5)
+print(f"Récupération des données depuis : {last_run}")
+
 query = """
 SELECT *
 FROM air_quality_data
-"""
+WHERE timestamp > %s
+"""""
 
-df = pd.read_sql(query, engine)
+df = pd.read_sql(query, engine, params=(last_run,))
 
 csv_file = "air_quality.csv"
 
